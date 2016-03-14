@@ -595,7 +595,7 @@ try:
 
 	sys.stdout.write("Step 3. Bitcoin blockchain rescan to load functionary outputs in wallet...")
 	sys.stdout.flush()
-	bitcoin[thread_id()].importaddress(settings.redeem_script, "", False, True)
+	#bitcoin[thread_id()].importaddress(settings.redeem_script, "", False, True)
 	trigger_bitcoin_rescan()
 	print("done")
 

@@ -1,4 +1,4 @@
-##Building A New Sidechain with Elements
+	##Building A New Sidechain with Elements
 
 This is a basic step-by-step guide to building your own sidechain and setting up a fedpeg. This configuration works to run a sidechain with a 1-of-1 functionary/blocksigner. (Not tested on multiple nodes with more than 1 signer)
 
@@ -34,7 +34,7 @@ Run testnet. If you get an error asking to rebuild the blockchain, replace `-txi
 ./bitcoind -rpcuser=$RPC_USER -rpcpassword=$RPC_PASS -testnet -txindex -daemon
 ```
 
-Checkout `alpha`. Before making any changes of your own,`fetch/merge` a [patch](https://github.com/TomMcCabe/elements/tree/patch) for a few code changes that will consolidate our settings in `sidechain-manipulation.py` and `constants.py` ([PR #86 of Elements Repo](https://github.com/ElementsProject/elements/pull/86)):
+Checkout `alpha`. Before making any changes of your own,`fetch/merge` a [patch](https://github.com/TomMcCabe/elements/tree/patch) for a few code changes that will consolidate our settings in `sidechain-manipulation.py` and `constants.py` ([PR #86 of Elements Repo](https://github.com/ElementsProject/elements/pull/86)), as well as a comment out a line in `withdraw_watch.py`:
 ```shell
 git checkout alpha
 git fetch https://github.com/TomMcCabe/elements patch
@@ -110,12 +110,11 @@ Replace the `nodes` with the network addresses (i.e. IPs) of your sidechain's bl
 Open the `.bashrc` file we edited earlier and add this to the bottom: 
 
 ```shell
-BLOCKSIGNING_PRIV_KEY=[private key generated earlier - associated to the public key in chainparmas.cpp]
-FUNCTIONARY_PRIV_KEY=[some separate generated private key]
+FUNCTIONARY_PRIV_KEY=[private key generated earlier - associated to the public key in chainparmas.cpp]
+BLOCKSIGNING_PRIV_KEY=[some separate generated private key]
 export BLOCKSIGNING_PRIV_KEY
 export FUNCTIONARY_PRIV_KEY
 ```
-
 Also be sure to import both private keys into your sidechain wallet using the RPC command: 
 
 ```shell
@@ -128,3 +127,7 @@ From here, you can follow [Step 6](https://github.com/ElementsProject/elements/b
 ```shell
 ./contrib/fedpeg/blocksign.py
 ```
+
+Follow the [Alpha guide to move money out of the sidechain](https://github.com/ElementsProject/elements/blob/alpha/alpha-README.md#to-move-money-back-out-of-elements-alpha). The `send-to-mainchain` will create the sidechain transaction to move money from your sidechain wallet and authorize the 'unlocking' of the mainchain coins. 
+
+Run `contrib/fedpeg/withdraw_watch.py` to claim the mainchain coins. Running `withdraw_watch.py` can take some time as it scans blocks on the mainchain. If you want to track the progress of the script, add `print(height)` after `[withdraw_watch.py:486](https://github.com/ElementsProject/elements/blob/alpha/contrib/fedpeg/withdrawwatch.py#L486)` which will print the block currently being scanned. Additionally, you can edit the starting block to be scanned on [line 593](https://github.com/ElementsProject/elements/blob/alpha/contrib/fedpeg/withdrawwatch.py#L593) - the default value of 447000 was the testnet block count when Elements began, therefore you can edit the value to be the testnet block count when you began your sidechain. You'll notice [Line 598](https://github.com/ElementsProject/elements/blob/alpha/contrib/fedpeg/withdrawwatch.py#L598) is commented out in the patch from earlier because we imported the private keys above.
