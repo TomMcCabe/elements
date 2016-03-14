@@ -1,4 +1,4 @@
-	##Building A New Sidechain with Elements
+##Building A New Sidechain with Elements
 
 This is a basic step-by-step guide to building your own sidechain and setting up a fedpeg. This configuration works to run a sidechain with a 1-of-1 functionary/blocksigner. (Not tested on multiple nodes with more than 1 signer)
 
