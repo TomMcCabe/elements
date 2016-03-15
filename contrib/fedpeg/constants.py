@@ -15,7 +15,7 @@ class FedpegConstants:
 	secondScriptPubKey = "OP_DROP 144 OP_LESSTHANOREQUAL"
 
 
-	blocksigning_private_key = os.environ["BLOCKSIGNING_PRIV_KEY"]"
+	blocksigning_private_key = os.environ["BLOCKSIGNING_PRIV_KEY"]
 	functionary_private_key = os.environ["FUNCTIONARY_PRIV_KEY"]
 
 	bitcoin_tx_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../bitcoin-tx")
