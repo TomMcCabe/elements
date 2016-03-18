@@ -11,7 +11,7 @@ from httplib import CannotSendRequest
 
 
 settings = FedpegConstants()
-port = 14252
+port = 4251
 
 sidechain = AuthServiceProxy(settings.sidechain_url)
 
