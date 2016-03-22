@@ -27,8 +27,8 @@ class FedpegConstants:
 	#Testnet:
 	#bitcoin_genesis_hash = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
 
-	nodes =["192.168.1.115", "173.31.39.168"]
-	my_node = "192.168.1.115"
+	nodes =["108.61.228.37", "173.31.39.168"]
+	my_node = "173.31.39.168"
 
 	# Set this to non-None if you're using a proxy (eg for Tor)
 	# Note that this requires ZMQ 4.1

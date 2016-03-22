@@ -136,8 +136,6 @@ public:
         hashGenesisBlock = genesis.GetHash();
         mapCheckpoints[0] = hashGenesisBlock;
 
-        vSeeds.push_back(CDNSSeedData("suredbits.com", "alpha-testnet.seed.suredbits.com"));
-
         base58Prefixes[PUBKEY_ADDRESS] = list_of(0);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(5);
         base58Prefixes[BLINDED_ADDRESS]= list_of(10);
@@ -190,7 +188,8 @@ public:
         mapCheckpointsTestnet[0] = hashGenesisBlock;
 
         vFixedSeeds.clear();
-        vSeeds.clear();
+        //vSeeds.clear();
+        vSeeds.push_back(CDNSSeedData("our_ip", "173.31.39.168"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(196);
