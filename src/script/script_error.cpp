@@ -73,8 +73,32 @@ const char* ScriptErrorString(const ScriptError serror)
             return "Withdraw proof validation failed - SPV proof/block coinbase invalid";
         case SCRIPT_ERR_WITHDRAW_VERIFY_LOCKTX:
             return "Withdraw proof validation failed - locking transaction misformatted";
-        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT:
-            return "Withdraw proof validation failed - output does not match expected";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_ONE:
+            return "Withdraw proof validation failed - output does not match expected - ONE";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TWO:
+            return "Withdraw proof validation failed - output does not match expected - TWO";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_THREE:
+            return "Withdraw proof validation failed - output does not match expected - THREE";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_FOUR:
+            return "Withdraw proof validation failed - output does not match expected - FOUR";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_FIVE:
+            return "Withdraw proof validation failed - output does not match expected - FIVE";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_SIX:
+            return "Withdraw proof validation failed - output does not match expected - SIX";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_SEVEN:
+            return "Withdraw proof validation failed - output does not match expected - SEVEN";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_EIGHT:
+            return "Withdraw proof validation failed - output does not match expected - EIGHT";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_NINE:
+            return "Withdraw proof validation failed - output does not match expected - NINE";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TEN:
+            return "Withdraw proof validation failed - output does not match expected - TEN";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_ELEVEN:
+            return "Withdraw proof validation failed - output does not match expected - ELEVEN";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TWELVE:
+            return "Withdraw proof validation failed - output does not match expected - TWELVE";
+        case SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_THIRTEEN:
+            return "Withdraw proof validation failed - output does not match expected - THIRTEEN";
         case SCRIPT_ERR_WITHDRAW_VERIFY_LOCKTIME:
             return "Withdraw proof validation failed - locktime was not set correctly";
         case SCRIPT_ERR_WITHDRAW_VERIFY_SECONDSCRIPT:

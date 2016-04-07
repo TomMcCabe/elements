@@ -50,10 +50,10 @@ parser_send_mainchain.add_argument('coinAmt', help = 'Amount of coins to pay ' \
 args = parser.parse_args()
 
 # VARIOUS SETTINGS...
-sidechain_url = "http://user:pass@127.0.0.1:4241"
-bitcoin_url = "http://user:pass@127.0.0.1:18332"
+sidechain_url = "http://tommccabe:0c4GwXdXzxl3@127.0.0.1:4251"
+bitcoin_url = "http://tommccabe:0c4GwXdXzxl3@127.0.0.1:18332"
 
-redeem_script = "55210269992fb441ae56968e5b77d46a3e53b69f136444ae65a94041fc937bdb28d93321021df31471281d4478df85bfce08a10aab82601dca949a79950f8ddf7002bd915a2102174c82021492c2c6dfcbfa4187d10d38bed06afb7fdcd72c880179fddd641ea121033f96e43d72c33327b6a4631ccaa6ea07f0b106c88b9dc71c9000bb6044d5e88a210313d8748790f2a86fb524579b46ce3c68fedd58d2a738716249a9f7d5458a15c221030b632eeb079eb83648886122a04c7bf6d98ab5dfb94cf353ee3e9382a4c2fab02102fb54a7fcaa73c307cfd70f3fa66a2e4247a71858ca731396343ad30c7c4009ce57ae"
+redeem_script = "5221023c4d01013fef44f5b567e4cbf426bdd92269667e77e0f551478ac1ad183f63d921020f2d896cb31ed5e63e5a1ea3f1d80377274dccdd61fef1a213d1ed41ac981ffa52ae"
 secondScriptPubKey = "OP_DROP 144 OP_LESSTHANOREQUAL"
 secondScriptPubKeyHash = "9eac001049d5c38ece8996485418421f4a01e2d7"
 
@@ -82,10 +82,11 @@ class UTXOFinder:
 	in_txid = ""
 	in_vout = -1
 	in_value = -1
+	in_scriptpubkey = ""
 
 	def check_tx(self, tx):
 		for vout, output in enumerate(tx["vout"]):
-			if output["scriptPubKey"]["type"] == "withdraw":
+			if output["scriptPubKey"]["type"] == "withdraw" and not "OP_DROP" in output["scriptPubKey"]["asm"]:
 				if output["value"] >= value:
 					self.in_txid = tx["txid"]
 					self.in_vout = vout
@@ -93,6 +94,7 @@ class UTXOFinder:
 					if txo == None:
 						continue
 					self.in_value = Decimal(txo["value"])
+					self.in_scriptpubkey = txo["scriptPubKey"]["hex"]
 			if self.in_value > self.target_value:
 				break
 
@@ -113,6 +115,7 @@ class UTXOFinder:
 				if txo == None:
 					continue
 				self.in_value = Decimal(txo["value"])
+				self.in_scriptpubkey = txo["scriptPubKey"]["hex"]
 			else:
 				block = sidechain.getblock(sidechain.getblockhash(i))
 				for tx in sidechain.batch_([["getrawtransaction", txhash, 1] for txhash in block["tx"]]):
@@ -215,6 +218,8 @@ try:
 			if output["scriptPubKey"]["type"] == "scripthash" and output["scriptPubKey"]["addresses"][0] == send_address:
 				nout = vout
 				value = Decimal(output["value"])
+				print(value)
+				print("nout: %s" % nout)
 				break
 		assert(nout != -1)
 
@@ -223,6 +228,7 @@ try:
 		in_txid = utxo.in_txid
 		in_vout = utxo.in_vout
 		in_value = utxo.in_value
+		in_scriptpubkey = utxo.in_scriptpubkey
 
 		print("Redeeming from utxo %s:%.16g (value %.16g, refund %.16g)" % (in_txid, in_vout, in_value, in_value - value))
 
@@ -233,6 +239,7 @@ try:
 		cht = os.popen('%s -create \'set=%s\' in=%s:%d:%s:-1 outscript=%s:"%s" outscript=%s:"%s" withdrawsign' % (sidechain_tx_path, withdrawkeys, in_txid, in_vout, str(in_value), str(value), out_scriptPubKey, str(in_value - value), relock_scriptPubKey))
 		res_tx = cht.read().split("\n")[0]
 		assert(cht.close() == None)
+		print(cht)
 
 		txid = sidechain.sendrawtransaction(res_tx)
 		print("Success!")

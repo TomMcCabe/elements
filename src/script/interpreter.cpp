@@ -12,6 +12,7 @@
 #include "callrpc.h"
 #endif
 
+#include <iostream>
 #include "primitives/transaction.h"
 #include "crypto/ripemd160.h"
 #include "crypto/sha1.h"
@@ -1355,7 +1356,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                             if (!newOutput.nValue.IsAmount())
                                 return set_error(serror, SCRIPT_ERR_WITHDRAW_VALUES_HIDDEN);
                             if (newOutput.scriptPubKey != script || newOutput.nValue.GetAmount() < minValue)
-                                return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+                                return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_ONE);
                         } else { // stack.size() == 10...ie regular withdraw
                             int stackReadPos = -3;
 #ifndef FEDERATED_PEG_SIDECHAIN_ONLY
@@ -1448,7 +1449,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                                     return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_FORMAT);
 
                                 // Duplicated in chainparams.cpp
-                                CScript scriptDestination(CScript() << OP_5 << ParseHex("0269992fb441ae56968e5b77d46a3e53b69f136444ae65a94041fc937bdb28d933") << ParseHex("021df31471281d4478df85bfce08a10aab82601dca949a79950f8ddf7002bd915a") << ParseHex("02174c82021492c2c6dfcbfa4187d10d38bed06afb7fdcd72c880179fddd641ea1") << ParseHex("033f96e43d72c33327b6a4631ccaa6ea07f0b106c88b9dc71c9000bb6044d5e88a") << ParseHex("0313d8748790f2a86fb524579b46ce3c68fedd58d2a738716249a9f7d5458a15c2") << ParseHex("030b632eeb079eb83648886122a04c7bf6d98ab5dfb94cf353ee3e9382a4c2fab0") << ParseHex("02fb54a7fcaa73c307cfd70f3fa66a2e4247a71858ca731396343ad30c7c4009ce") << OP_7 << OP_CHECKMULTISIG);
+                                CScript scriptDestination(CScript() << OP_2 << ParseHex("023c4d01013fef44f5b567e4cbf426bdd92269667e77e0f551478ac1ad183f63d9") << ParseHex("020f2d896cb31ed5e63e5a1ea3f1d80377274dccdd61fef1a213d1ed41ac981ffa") << OP_2 << OP_CHECKMULTISIG);
                                 {
                                     CScript::iterator sdpc = scriptDestination.begin();
                                     vector<unsigned char> vch;
@@ -1473,7 +1474,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
 
                                 CScriptID expectedP2SH(scriptDestination);
                                 if (locktx.vout[nlocktxOut].scriptPubKey != GetScriptForDestination(expectedP2SH))
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TWO);
 
                                 vcontract.erase(vcontract.begin() + 4, vcontract.begin() + 20); // Remove the nonce from the contract before further processing
 #else
@@ -1497,14 +1498,15 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                                 const CTxOut newLockOutput = checker.GetOutputOffsetFromCurrent(1);
                                 if (!newLockOutput.nValue.IsAmount() || !checker.GetValueIn().IsAmount())
                                     return set_error(serror, SCRIPT_ERR_WITHDRAW_VALUES_HIDDEN);
-                                if (newLockOutput.scriptPubKey != script || newLockOutput.nValue.GetAmount() < checker.GetValueIn().GetAmount() - withdrawVal)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+                                if (newLockOutput.scriptPubKey != script || newLockOutput.nValue.GetAmount() < checker.GetValueIn().GetAmount() - withdrawVal) 
+									return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_THREE);
 
                                 const CTxOut withdrawOutput = checker.GetOutputOffsetFromCurrent(0);
                                 if (!withdrawOutput.nValue.IsAmount())
                                     return set_error(serror, SCRIPT_ERR_WITHDRAW_VALUES_HIDDEN);
                                 if (withdrawOutput.nValue.GetAmount() < withdrawVal)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1510" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_FOUR);
 
                                 uint256 locktxHash = locktx.GetBitcoinHash();
                                 std::vector<unsigned char> vlocktxHash(locktxHash.begin(), locktxHash.end());
@@ -1519,29 +1521,38 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                                 // << std::vector<unsigned char>(vcontract.begin() + 4, vcontract.begin() + 24) << OP_EQUAL << OP_ENDIF;
                                 if (withdrawOutput.scriptPubKey.size() < expectedWithdrawScriptPubKeyStart.size() ||
                                         memcmp(&withdrawOutput.scriptPubKey[0], &expectedWithdrawScriptPubKeyStart[0], expectedWithdrawScriptPubKeyStart.size()) != 0)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1526" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_FIVE);
                                 CScript::const_iterator withdrawOutputpc = withdrawOutput.scriptPubKey.begin() + expectedWithdrawScriptPubKeyStart.size();
                                 valtype vlockTime;
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime))
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1531" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_SIX);
                                 int nWithdrawLockTime = CScriptNum(vlockTime, fRequireMinimal).getint();
                                 if ((unsigned int)nWithdrawLockTime >= LOCKTIME_THRESHOLD || nWithdrawLockTime < 1)
                                     return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_LOCKTIME);
 
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || opcodeTmp != OP_CHECKSEQUENCEVERIFY)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1538" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_SEVEN);
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || opcodeTmp != OP_DROP)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1541" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_EIGHT);
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || opcodeTmp != OP_HASH160)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1544" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_NINE);
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || vlockTime != std::vector<unsigned char>(vcontract.begin() + 4, vcontract.begin() + 24))
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1547" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TEN);
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || opcodeTmp != OP_EQUAL)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1550" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_ELEVEN);
                                 if (!withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime) || opcodeTmp != OP_ENDIF)
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1553" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_TWELVE);
                                 if (withdrawOutput.scriptPubKey.GetOp(withdrawOutputpc, opcodeTmp, vlockTime))
-                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT);
+									cout << "line 1556" << "\n";
+                                    return set_error(serror, SCRIPT_ERR_WITHDRAW_VERIFY_OUTPUT_THIRTEEN);
 
                                 valtype vsecondScriptPubKeyHashCmp(20);
                                 CHash160().Write(begin_ptr(vsecondScriptPubKey), vsecondScriptPubKey.size()).Finalize(begin_ptr(vsecondScriptPubKeyHashCmp));

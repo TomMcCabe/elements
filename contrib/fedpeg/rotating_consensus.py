@@ -24,26 +24,39 @@ class ConsensusPublisher:
 		self.socket.bind("tcp://*:%d" % port)
 		zmq_poller.register(self.socket, zmq.POLLOUT)
 
+
 	def send_message(self, msg):
+		print("begin send_message")
 		self.socket.send("42 %s" % msg.encode("ascii", "strict"))
+		print("message to be sent: %s" % msg)
+		print("send_message completed")
 
 class ConsensusSocket:
 	def __init__(self, host, port, proxy):
 		self.host = host
+		#print("host: %s" % host)
 		self.isSelf = False
 		self.sock = zmq_context.socket(zmq.SUB)
+		print("self.sock = %s" % self.sock)
 		if proxy != None:
 			self.sock.setsockopt(zmq.SOCKS_PROXY, proxy)
 		self.sock.setsockopt(zmq.RECONNECT_IVL, 500)
 		self.sock.setsockopt(zmq.RECONNECT_IVL_MAX, 10000)
 		self.sock.connect("tcp://%s:%d" % (host, port))
+		#print("tcp://%s:%d" % (host, port))
 		self.sock.setsockopt(zmq.SUBSCRIBE, "42")
 		zmq_poller.register(self.sock, zmq.POLLIN)
 
 	def read_message(self):
+		print("start read_message")
+
+		print("Dict: %s" % dict(zmq_poller.poll()))
 		if not dict(zmq_poller.poll()).has_key(self.sock):
+			print("read_message failed")
 			return None
 		topic, msg = self.sock.recv().split(" ", 1)
+		print("read message received?")
+		print("read_message: %s" % msg)
 		return msg
 
 class Self:
@@ -70,11 +83,13 @@ class RotatingConsensus:
 			sleep(self.interval - time() % self.interval)
 			start_time = int(time())
 			step = int(time()) % (self.interval * len(self.nodes)) / self.interval
+			#self.publisher.send_message("hello are you there")
 
 			for node in self.nodes:
 				msg = ""
 				while msg != None:
 					msg = node.read_message()
+					#print("read msg: %s" % msg)
 
 			if self.nodes[step].isSelf:
 				print("Starting master round (as %s)" % self.nodes[step].host)
@@ -120,8 +135,8 @@ class RotatingConsensus:
 				msg = node.read_message()
 				if msg != None:
 					msgs.append((node.host, msg))
-
 			self._round_done(msgs)
+			#print("messages: %s" % msgs)
 			if time() > start_time + self.interval:
 				print("round_done took longer than interval/2: We skipped a round!")
 

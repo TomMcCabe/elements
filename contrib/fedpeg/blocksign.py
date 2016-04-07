@@ -11,9 +11,11 @@ from httplib import CannotSendRequest
 
 
 settings = FedpegConstants()
-port = 14252
+port = 50000
 
 sidechain = AuthServiceProxy(settings.sidechain_url)
+
+print(settings.blocksigning_private_key)
 
 class WatchPeerController(RotatingConsensus):
 	round_local_block_hex = ""
@@ -33,10 +35,14 @@ class WatchPeerController(RotatingConsensus):
 
 	def round_done(self, peer_messages):
 		mysig = sidechain.signblock(self.round_local_block_hex)
+		#print("My sig: %s" % mysig)
 		peer_messages.append(("self", mysig))
-		sys.stdout.write("Got signatures from %s, now combining..." % str([x[0] for x in peer_messages if x[1][0] == "0" and x[1][1] == "0" and len(x[1]) == 132]))
+		sys.stdout.write("Got signatures from %s, now combining...\n" % str([x[0] for x in peer_messages if x[1][0] == "0" and x[1][1] == "0" and len(x[1]) == 132]))
+		
+		#print("per msgs: %s" % peer_messages)
 		sys.stdout.flush()
 		res = sidechain.combineblocksigs(self.round_local_block_hex, [x[1] for x in peer_messages])
+		
 		if res["complete"]:
 			sys.stdout.write("got completely signed block, submitting to sidechaind...")
 			sys.stdout.flush()
